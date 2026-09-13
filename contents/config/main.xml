@@ -22,13 +22,9 @@
             <label>Show Claude icon in panel</label>
             <default>true</default>
         </entry>
-        <entry name="iconSize" type="Int">
-            <label>Panel icon size (0 = auto)</label>
-            <default>0</default>
-        </entry>
         <entry name="panelStyle" type="String">
             <label>Panel display style (text or circular)</label>
-            <default>ring</default>
+            <default>text</default>
         </entry>
         <entry name="showSession" type="Bool">
             <label>Show session (5hr) usage in panel</label>
@@ -38,45 +34,17 @@
             <label>Show weekly (7day) usage in panel</label>
             <default>true</default>
         </entry>
-        <entry name="showModelLimits" type="String">
-            <label>Comma-separated list of model names to show in panel (from API limits)</label>
-            <default></default>
-        </entry>
-        <entry name="quickLinks" type="String">
-            <label>Quick links as JSON array [{name, url, icon}]</label>
-            <default>[]</default>
-        </entry>
-        <entry name="popupStyle" type="String">
-            <label>Popup display style (classic or card)</label>
-            <default>card</default>
-        </entry>
-        <entry name="panelIcon" type="String">
-            <label>Panel icon style (claude or tile)</label>
-            <default>tile</default>
-        </entry>
-        <entry name="enableNotifications" type="Bool">
-            <label>Send desktop notifications for usage thresholds and quota resets</label>
-            <default>true</default>
-        </entry>
-        <entry name="enableUpdateCheck" type="Bool">
-            <label>Check for Claude Code updates via npm registry</label>
-            <default>true</default>
-        </entry>
-        <entry name="showInstallations" type="Bool">
-            <label>Show Claude Code installations in popup</label>
+        <entry name="showSonnet" type="Bool">
+            <label>Show Sonnet weekly usage in panel</label>
             <default>false</default>
         </entry>
-        <entry name="cardOrder" type="String">
-            <label>Card visibility and order in popup as JSON array [{id, enabled}]</label>
-            <default>[{"id":"account","enabled":true},{"id":"usage","enabled":true},{"id":"models","enabled":true},{"id":"extra","enabled":true},{"id":"tokens","enabled":true},{"id":"trend","enabled":true},{"id":"installations","enabled":true},{"id":"links","enabled":true}]</default>
+        <entry name="showOpenAI" type="Bool">
+            <label>Show OpenAI Codex usage</label>
+            <default>true</default>
         </entry>
-        <entry name="processVisibility" type="String">
-            <label>Visibility mode when Claude is not running (always, hide_usage, or fully_hidden)</label>
-            <default>always</default>
-        </entry>
-        <entry name="processCheckInterval" type="Int">
-            <label>Process check interval in seconds</label>
-            <default>30</default>
+        <entry name="showFable" type="Bool">
+            <label>Show Fable weekly usage in panel</label>
+            <default>false</default>
         </entry>
         <entry name="baseUrl" type="String">
             <label>Custom API base URL (leave empty to use ~/.claude/.credentials.json)</label>
@@ -86,21 +54,9 @@
             <label>API key (required when custom base URL is set)</label>
             <default></default>
         </entry>
-        <entry name="useTimeAwareColors" type="Bool">
-            <label>Use time-proportional color thresholds instead of fixed 50/80/100%</label>
-            <default>true</default>
-        </entry>
-        <entry name="autoRefreshSession" type="Bool">
-            <label>Silently refresh expired session token in background</label>
-            <default>false</default>
-        </entry>
         <entry name="backgroundOpacity" type="Double">
             <label>Background opacity (0.0 = transparent, 1.0 = opaque)</label>
             <default>1.0</default>
-        </entry>
-        <entry name="scrollableContent" type="Bool">
-            <label>Enable scrollable content in card popup</label>
-            <default>false</default>
         </entry>
     </group>
 </kcfg>

@@ -1,29 +1,48 @@
-# Claude Usage Widget
+# Claude + OpenAI Usage Widget
 
-A KDE Plasma 6 widget that displays your Claude Code usage statistics in the taskbar.
+A KDE Plasma 6 widget that displays your Claude Code and OpenAI Codex usage statistics in the taskbar.
+
+## Local OpenAI addition
+
+OpenAI Codex usage is enabled by default, with separate percentages, reset times,
+update timestamps, and error states. It follows the selected text, circular, or bar
+panel style. Disable it with **OpenAI Codex usage** in widget settings.
+
+Requires Python 3 and a logged-in Codex CLI (`codex login`). The helper uses the
+documented `account/rateLimits/read` method of `codex app-server`; it creates no
+model turns and never reads or copies authentication tokens itself. See the
+[official app-server documentation](https://learn.chatgpt.com/docs/app-server#6-rate-limits-chatgpt).
+These are Codex account quotas, not OpenAI API billing totals. Only quota windows
+returned by the account are shown; a missing window is not displayed as 0%.
+
+The helper lives in `contents/scripts/openai_usage.py`. All widget instances share
+`$XDG_CACHE_HOME/plasma-openai-usage/usage.json` (default `~/.cache`), protected by
+a file lock. Refresh follows the configured interval independently of Claude;
+manual refresh reuses results less than 55 seconds old. Failed requests retain
+last-known usage for up to 24 hours and mark it outdated.
+
+This is a local customization; reinstalling the upstream widget can overwrite it.
 
 ![Popup](screenshots/popup.png)
 
 ## Features
 
-- **3 Panel Styles**: Ring (anti-aliased progress rings), Text (percentage + dot), Bar (vertical bars with time marker)
+- **Compact Panel Display**: Shows session and weekly usage percentages right in your taskbar
   ![Panel](screenshots/panel.png)
-- **Time-Proportional Coloring**: Colors based on elapsed time vs usage ratio (configurable, can switch to fixed 50/80/100% thresholds)
-- **Card Popup**: Modern card-based popup with configurable card order and visibility (via settings)
-  - Account info, session & weekly usage rings, per-model breakdown, extra usage, token stats, trend chart, installations, quick links
-- **Classic Popup**: Traditional layout with progress bars (switchable in settings)
-- **Desktop Notifications**: Alerts when usage crosses thresholds (50/80/95% session, 95% weekly, quota reset)
-- **Update Checker**: Orange dot on panel icon when a new Claude Code version is available
-- **Process Visibility**: Hide widget or usage when Claude is not running
+- **Color-coded Indicators**: Green (<50%), Yellow (<80%), Red (≥80%)
+- **Detailed Popup**: Click to see full statistics
+  - Session and weekly usage with progress bars
+  - Reset times for both limits
+  - Per-model breakdown (Sonnet/Opus)
+  - Your subscription plan badge
 - **Configurable Refresh**: Default 5 min polling (adjustable in settings)
 - **Smart Rate Limit Handling**: Uses `retry-after` header, exponential backoff, and token watcher for automatic recovery
 - **Local Cache**: Remembers last data on restart (up to 24h)
 - **Stale Detection**: Widget dims when data is outdated
 - **Error Handling**: Clear messages when not logged in, token expired, or rate limited
 - **Custom API Support**: Optional proxy/gateway with custom base URL and API key
-- **Configurable Background Opacity**: Adjustable transparency for desktop placement
 - **15 Languages**: EN, HU, DE, FR, ES, IT, PT, RU, PL, NL, TR, JA, KO, ZH-CN, ZH-TW
-- **No Dependencies**: Pure QML, no Python or external tools required
+- **OpenAI Codex Usage**: Uses Python 3 and your installed Codex CLI
 
 ## Requirements
 
@@ -81,7 +100,8 @@ When a base URL is configured, the widget authenticates with `x-api-key` instead
 
 ## How It Works
 
-The widget calls the Anthropic usage API directly from QML. No data is stored or sent anywhere else.
+The Claude portion calls the Anthropic usage API directly from QML and caches its
+last successful usage locally. The OpenAI portion uses the local helper described above.
 
 ### API Endpoint
 
@@ -136,24 +156,18 @@ The base URL in the widget settings doesn't point to a valid API. Make sure you'
 
 ```
 claude-usage-widget/
-├── metadata.json              # Widget metadata
-├── install.sh                 # Installation script
+├── metadata.json           # Widget metadata
+├── install.sh              # Installation script
 ├── contents/
 │   ├── config/
-│   │   └── main.xml           # Configuration schema
+│   │   └── main.xml        # Configuration schema
 │   ├── ui/
-│   │   ├── main.qml           # Core logic, data, API
-│   │   ├── CompactView.qml    # Panel representation (text/bar/ring)
-│   │   ├── FullView.qml       # Card popup with drag & drop
-│   │   ├── UsageRing.qml      # Anti-aliased progress ring component
-│   │   ├── ModelRow.qml       # Model breakdown row component
-│   │   ├── TrendChart.qml     # 7-day trend chart component
-│   │   ├── configGeneral.qml  # Settings UI
-│   │   └── Translations.qml   # i18n (15 languages)
+│   │   ├── main.qml        # Widget implementation
+│   │   ├── configGeneral.qml # Settings UI
+│   │   └── Translations.qml # i18n (15 languages)
 │   └── icons/
-│       ├── claude.svg         # Claude logo (orange)
-│       └── claude-tile.svg    # Claude tile icon
-└── screenshots/               # Preview images
+│       └── claude.svg      # Claude logo (orange)
+└── screenshots/            # Preview images
 ```
 
 ## License
@@ -164,6 +178,57 @@ GPL-3.0-or-later
 
 izll
 
-## Changelog
+## Version History
 
-See [CHANGELOG.md](CHANGELOG.md) for a detailed version history.
+### 1.3.6 (2026)
+- Vertical layout option for taller panels (thanks @nahall, issue #5)
+- Panel metrics can now be stacked vertically to save horizontal space
+
+### 1.3.5 (2026)
+- Widget picker now shows proper preview image (progress ring + Claude logo + USAGE)
+- About page shows correct icon via auto-install to system icon theme
+- New `contents/screenshot.png` for KPackage widget picker preview
+
+### 1.3.2 (2026)
+- Fix widget icon not showing in panel widget picker dialog
+
+### 1.3.1 (2026)
+- Configurable background opacity for desktop mode (thanks @Endle)
+- Background opacity only applies on desktop, panel keeps default Plasma theme
+- Default opacity set to 100% for consistent upgrade experience
+
+### 1.3.0 (2026)
+- Three panel display styles: Text (classic), Circular (ring charts), Bar (vertical bars)
+- Claude icon can be hidden in panel
+- Tooltip shows all enabled metrics
+
+### 1.2.5 (2026)
+- Configurable panel metrics: choose Session, Weekly, Sonnet independently
+- Sonnet weekly usage can now be displayed in the panel (off by default)
+
+### 1.2.1 (2026)
+- Remove false decimal precision from percentage displays (thanks @robinpie)
+
+### 1.2.0 (2026)
+- Smart rate limit handling with `retry-after` header support
+- Exponential backoff with automatic recovery
+- Token watcher: instantly recovers when Claude Code refreshes the token
+- Local data cache: shows last known values on restart (up to 24h)
+- Stale detection: widget dims when data is outdated
+- Default refresh interval changed to 5 min to prevent rate limiting
+- Rate limit warning in popup and settings for intervals under 5 min
+
+### 1.1.0 (2026)
+- Custom API base URL and API key support for proxy/gateway users
+- 429 rate limit handling with auto-retry
+- Token expired state with "Open Claude" button
+- Dynamic Claude Code version detection for User-Agent
+- All strings translated across 15 languages
+- Install script added
+
+### 1.0.0 (2025)
+- Initial release
+- Session and weekly usage display
+- Per-model breakdown (Sonnet/Opus)
+- Configurable refresh interval
+- Error handling for login issues

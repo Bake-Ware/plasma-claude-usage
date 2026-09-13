@@ -1,6 +1,3 @@
-# Claude Code local settings (not the docs)
-.claude/settings.local.json
-
-*.log
-*~
 *.plasmoid
+__pycache__/
+*.py[cod]
