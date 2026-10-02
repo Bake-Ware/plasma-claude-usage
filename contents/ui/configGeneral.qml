@@ -22,6 +22,8 @@ KCM.SimpleKCM {
     property bool cfg_showSonnet
     property bool cfg_showOpenAI
     property bool cfg_showFable
+    property bool cfg_showDeepSeek
+    property double cfg_deepseekWarnBelow
     property string cfg_baseUrl
     property string cfg_apiKey
     property double cfg_backgroundOpacity
@@ -146,6 +148,27 @@ KCM.SimpleKCM {
             text: "OpenAI Codex usage (uses your Codex CLI login)"
             checked: cfg_showOpenAI
             onCheckedChanged: cfg_showOpenAI = checked
+        }
+
+        QQC2.CheckBox {
+            text: "DeepSeek API balance (uses your dsh key or DEEPSEEK_API_KEY)"
+            checked: cfg_showDeepSeek
+            onCheckedChanged: cfg_showDeepSeek = checked
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: "DeepSeek low balance:"
+            enabled: cfg_showDeepSeek
+
+            QQC2.SpinBox {
+                from: 0
+                to: 100000
+                stepSize: 50
+                value: Math.round(cfg_deepseekWarnBelow * 100)
+                textFromValue: function(value, locale) { return (value / 100).toFixed(2) }
+                valueFromText: function(text, locale) { return Math.round(parseFloat(text) * 100) || 0 }
+                onValueModified: cfg_deepseekWarnBelow = value / 100
+            }
         }
 
         RowLayout {

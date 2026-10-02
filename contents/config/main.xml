@@ -42,6 +42,14 @@
             <label>Show OpenAI Codex usage</label>
             <default>true</default>
         </entry>
+        <entry name="showDeepSeek" type="Bool">
+            <label>Show DeepSeek API balance</label>
+            <default>true</default>
+        </entry>
+        <entry name="deepseekWarnBelow" type="Double">
+            <label>DeepSeek balance below which the indicator turns yellow</label>
+            <default>2.0</default>
+        </entry>
         <entry name="showFable" type="Bool">
             <label>Show Fable weekly usage in panel</label>
             <default>false</default>

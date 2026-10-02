@@ -21,6 +21,22 @@ a file lock. Refresh follows the configured interval independently of Claude;
 manual refresh reuses results less than 55 seconds old. Failed requests retain
 last-known usage for up to 24 hours and mark it outdated.
 
+## Local DeepSeek addition
+
+DeepSeek API balance is shown next to the Claude and OpenAI figures. DeepSeek has
+no quota windows, so the widget shows the account balance from the documented
+`GET /user/balance` endpoint, always as text regardless of panel style. The dot is
+green, yellow below the configured low-balance threshold (default 2.00), and red
+when the balance is zero or the API reports it as insufficient. "Spent today" is
+derived locally from the drop since the first reading of the day (a top-up resets
+it), because DeepSeek exposes no usage endpoint.
+
+The helper `contents/scripts/deepseek_usage.py` reads the key from the
+`DEEPSEEK_API_KEY` environment variable or, failing that, in place from dsh's
+`~/.dsh/.credentials.yaml`. Caching, locking and stale handling match the OpenAI
+helper, under `$XDG_CACHE_HOME/plasma-deepseek-usage/`. Disable it with
+**DeepSeek API balance** in widget settings.
+
 This is a local customization; reinstalling the upstream widget can overwrite it.
 
 ![Popup](screenshots/popup.png)

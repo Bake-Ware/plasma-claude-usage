@@ -15,6 +15,17 @@ PlasmoidItem {
         refreshMinutes: Plasmoid.configuration.refreshInterval || 5
     }
 
+    DeepSeekUsage {
+        id: deepseek
+        active: Plasmoid.configuration.showDeepSeek !== false
+        refreshMinutes: Plasmoid.configuration.refreshInterval || 5
+        warnBelow: Plasmoid.configuration.deepseekWarnBelow
+    }
+
+    function getLevelColor(level) {
+        return level === 2 ? Kirigami.Theme.negativeTextColor : level === 1 ? Kirigami.Theme.neutralTextColor : Kirigami.Theme.positiveTextColor
+    }
+
     // Translations
     Translations {
         id: i18n
@@ -397,6 +408,7 @@ PlasmoidItem {
 
     function refresh() {
         openai.refresh(true)
+        deepseek.refresh(true)
         root.hasTokenError = false
         root.hasRateLimitError = false
         root.rateLimitRetryCount = 0
@@ -825,6 +837,42 @@ PlasmoidItem {
                 color: openai.error ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.textColor
             }
 
+            PlasmaComponents.Label {
+                visible: deepseek.active && !root.isVerticalLayout
+                text: "|"
+                opacity: 0.4
+            }
+            PlasmaComponents.Label {
+                visible: deepseek.active
+                text: "DeepSeek"
+                font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+                opacity: deepseek.stale ? 0.6 : 1
+            }
+            // A balance is not a percentage, so it stays text in every panel style
+            Repeater {
+                model: deepseek.active ? deepseek.balances : []
+                RowLayout {
+                    required property var modelData
+                    spacing: Kirigami.Units.smallSpacing
+                    opacity: deepseek.stale ? 0.6 : 1
+                    Rectangle {
+                        implicitWidth: 10
+                        implicitHeight: 10
+                        radius: 5
+                        color: root.getLevelColor(deepseek.level(modelData))
+                    }
+                    PlasmaComponents.Label {
+                        text: deepseek.format(modelData)
+                        font.bold: true
+                    }
+                }
+            }
+            PlasmaComponents.Label {
+                visible: deepseek.active && deepseek.balances.length === 0
+                text: deepseek.error ? "⚠" : "…"
+                color: deepseek.error ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.textColor
+            }
+
             // Error text (non-token errors only)
             PlasmaComponents.Label {
                 visible: root.errorMsg !== "" && !root.hasTokenError && !root.hasRateLimitError
@@ -1226,6 +1274,63 @@ PlasmoidItem {
                 }
             }
 
+            ColumnLayout {
+                visible: deepseek.active
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.smallSpacing
+                Kirigami.Separator { Layout.fillWidth: true }
+                RowLayout {
+                    Layout.fillWidth: true
+                    PlasmaComponents.Label { text: "DeepSeek · API"; font.bold: true }
+                    Item { Layout.fillWidth: true }
+                    PlasmaComponents.Label {
+                        visible: deepseek.balances.length > 0 && !deepseek.available
+                        text: "Insufficient balance"
+                        font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+                        color: Kirigami.Theme.negativeTextColor
+                    }
+                }
+                Repeater {
+                    model: deepseek.balances
+                    ColumnLayout {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: Kirigami.Units.smallSpacing
+                        opacity: deepseek.stale ? 0.6 : 1
+                        RowLayout {
+                            Layout.fillWidth: true
+                            PlasmaComponents.Label { text: "Balance" }
+                            Item { Layout.fillWidth: true }
+                            PlasmaComponents.Label {
+                                text: deepseek.format(modelData)
+                                font.bold: true
+                                color: root.getLevelColor(deepseek.level(modelData))
+                            }
+                        }
+                        PlasmaComponents.Label {
+                            text: "Spent today: " + modelData.spentToday.toFixed(2)
+                                + (modelData.granted > 0 ? " · Granted: " + modelData.granted.toFixed(2) : "")
+                            font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+                            color: Kirigami.Theme.disabledTextColor
+                        }
+                    }
+                }
+                PlasmaComponents.Label {
+                    Layout.fillWidth: true
+                    visible: deepseek.error !== "" || deepseek.balances.length === 0
+                    text: deepseek.error || "Loading DeepSeek balance…"
+                    wrapMode: Text.WordWrap
+                    color: deepseek.error ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.disabledTextColor
+                    font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+                }
+                PlasmaComponents.Label {
+                    visible: deepseek.timestamp > 0
+                    text: "Updated: " + Qt.formatTime(new Date(deepseek.timestamp * 1000), "hh:mm:ss") + (deepseek.stale ? " (outdated)" : "")
+                    font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+                    color: Kirigami.Theme.disabledTextColor
+                }
+            }
+
             // Rate limit warning
             PlasmaComponents.Label {
                 visible: (Plasmoid.configuration.refreshInterval || 5) < 5
@@ -1391,6 +1496,7 @@ PlasmoidItem {
         if (Plasmoid.configuration.showFable === true)
             parts.push("Fable: " + Math.round(root.fableWeeklyPercent) + "%")
         if (openai.active) parts.push(openai.summary)
+        if (deepseek.active) parts.push(deepseek.summary)
         return parts.join(" | ")
     }
 }
